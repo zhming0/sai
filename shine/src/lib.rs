@@ -5,21 +5,33 @@ use std::boxed::Box;
 extern crate downcast_rs;
 use downcast_rs::DowncastSync;
 
+pub use component_derive::Component;
+
 pub trait Component: DowncastSync {
-    fn start(&mut self) -> ();
+    fn start(&mut self) {}
+    fn stop(&mut self) {}
+
+    fn build(registry: &ComponentRepository) -> Self
+        where Self: Sized;
 }
 impl_downcast!(sync Component);
 
-pub type ComponentRegistry = HashMap<String, Box<dyn Component>>;
+// Different from ComponentRegistry
+pub type ComponentRepository = HashMap<String, Box<dyn Component>>;
 
 /*
  * Some testing component
  */
+// #[derive(Component)]
 struct Foo {
 }
 
 impl Component for Foo {
     fn start(&mut self) {
+    }
+
+    fn build(_: &ComponentRepository) -> Foo {
+        return Foo { }
     }
 }
 
@@ -28,6 +40,10 @@ struct Bar {
 
 impl Component for Bar {
     fn start(&mut self) {
+    }
+
+    fn build(_: &ComponentRepository) -> Bar {
+        return Bar { }
     }
 }
 
@@ -43,13 +59,13 @@ struct ComponentInfo<T> {
     // For topolofy calculartion
     depends_on: Vec<String>,
 
-    initialize: dyn Fn(&ComponentRegistry) -> Arc<T>
+    initialize: dyn Fn(&ComponentRepository) -> Arc<T>
 }
 
 // A list of ComponentInfo -> Container
 pub fn create_container() {
 
-    let mut registry: ComponentRegistry = HashMap::new();
+    let mut registry: ComponentRepository = HashMap::new();
 
     let foo = Foo {};
     registry.insert("Foo".to_string(), Box::new(foo));
