@@ -1,26 +1,37 @@
 use shine::Component;
+use std::sync::Arc;
+use std::any::TypeId;
 
 /*
  * Some testing component
  */
 #[derive(Component)]
 struct Foo {
-    #[injected(name="hello world")]
-    a: String
+    #[injected]
+    a: Arc<String>,
+
+    b: String
 }
 
 
 #[test]
-fn test_what() {
+fn test_build() {
 
-    let repo = shine::ComponentRepository::new();
+    let mut repo = shine::ComponentRepository::new();
+    let s = String::from("hello world");
+    repo.insert(Arc::new(s));
 
     let foo = Foo::build(&repo);
 
-    //let mut f = Foo {
-    //    //a: "hello world".to_string()
-    //};
-    //f.start();
+    assert_eq!(foo.a.as_str(), "hello world");
+    assert_eq!(foo.b, "");
+}
 
-    assert_eq!(2 + 2, 4);
+#[test]
+fn test_meta() {
+
+    let meta = Foo::meta();
+
+    assert_eq!(meta.type_id, TypeId::of::<Foo>());
+    assert_eq!(meta.depends_on, vec![TypeId::of::<Arc<String>>()]);
 }

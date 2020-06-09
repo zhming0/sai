@@ -23,13 +23,25 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 
     let fields_tokens = build_struct_fields(&fields);
 
+    let depends_on_tokens = build_depends_on(&fields);
+
     let tokens = quote!{
         impl shine::Component for #ident {
-             fn build(registry: &shine::ComponentRepository) -> #ident {
+            fn build(registry: &shine::ComponentRepository) -> #ident {
                 return #ident {
                     #fields_tokens
                 }
 
+            }
+
+            // Used during topology sort to calculate DAG
+            fn meta() -> shine::ComponentMeta<#ident> {
+
+                return shine::ComponentMeta {
+                    type_id: std::any::TypeId::of::<#ident>(),
+                    depends_on: #depends_on_tokens,
+                    build: #ident::build
+                }
             }
         }
     };
@@ -43,8 +55,18 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
         .into_iter()
         .map(|f| {
             let ident = &f.ident;
-            quote! {
-                #ident: Default::default()
+            let ty = &f.ty;
+            if f.injected {
+                let erroMsg = format!("Unable to find type {} in component repository", quote!{#ty});
+
+                // Unable to find type {} in component repository
+                return quote! {
+                    #ident: registry.get::<#ty>().expect(#erroMsg).clone()
+                }
+            } else {
+                return quote! {
+                    #ident: Default::default()
+                }
             }
         })
         .collect();
@@ -52,6 +74,24 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
 
     quote!{
         #(#x),*
+    }
+}
+
+fn build_depends_on(fields: &Vec<ComponentField>) -> TokenStream2 {
+
+    let x: Vec<TokenStream2> = fields
+        .into_iter()
+        .filter(|f| f.injected)
+        .map(|f| {
+            let ty = &f.ty;
+            return quote! {
+                std::any::TypeId::of::<#ty>()
+            }
+        })
+        .collect();
+
+    quote! {
+        vec![ #(#x),* ]
     }
 }
 
@@ -85,28 +125,35 @@ fn parse_struct_data (data: &Data) -> Vec<ComponentField> {
 
 fn parse_struct_field (field: &Field) -> ComponentField {
 
-    let mut injected = false;
     let ty = field.ty.clone();
     let ident = field.ident.clone().unwrap();
     let attrs = &field.attrs;
 
+    let injected = attrs
+        .iter()
+        .map(|attr| is_injected_attribute(attr))
+        .any(|i| match i {
+            Ok(v) => v,
+            Err(_) => false // TODO: improve error handling
+        });
+
 
     return ComponentField {
-        injected: false,
+        injected,
         ident,
         ty
     }
 }
 
-fn get_injected_meta_items(attr: &syn::Attribute) -> Result<Vec::<syn::NestedMeta>, ()> {
+fn is_injected_attribute(attr: &syn::Attribute) -> Result<bool, ()> {
     if attr.path != INJECTED {
-        return Ok(Vec::new())
+        return Ok(false)
     }
 
     match attr.parse_meta() {
-        Ok(List(meta)) => Ok(meta.nested.into_iter().collect()),
-        Ok(_) => Ok(Vec::new()),
-        Err(_) => Ok(Vec::new())
+        Ok(Path(_)) => Ok(true), // Only expect #[injected]
+        Ok(_) => Err(()), // TODO: improve error handling
+        Err(_) => Err(()) // TODO: improve error handling
     }
 }
 
