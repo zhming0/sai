@@ -19,15 +19,25 @@ pub trait Component {
     fn build(registry: &ComponentRepository) -> Self
         where Self: Sized;
 
-    fn meta() -> ComponentMeta<Self>
+    fn meta() -> ComponentMeta<Box<Self>>
         where Self: Sized;
 }
 
-#[derive(Clone)]
 pub struct ComponentMeta<T: ?Sized> {
     pub depends_on: Vec<TypeId>,
-    pub build: fn(&ComponentRepository) -> T,
-    pub type_id: TypeId
+    pub type_id: TypeId,
+    pub build: Box<dyn Fn(&ComponentRepository) -> T>
+}
+
+impl<T: Component + 'static> From<ComponentMeta<Box<T>>> for ComponentMeta<Box<dyn Component>> {
+
+    fn from(m: ComponentMeta<Box<T>>) -> Self {
+        ComponentMeta {
+            depends_on: m.depends_on.clone(),
+            type_id: m.type_id,
+            build: Box::new(move |r: &ComponentRepository| (m.build)(r))
+        }
+    }
 }
 
 #[cfg(test)]

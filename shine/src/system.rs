@@ -1,8 +1,8 @@
 use std::any::TypeId;
 use std::collections::HashSet;
-use super::{ComponentMeta, Component};
+use super::{ComponentMeta, Component, ComponentRepository};
 
-type GenericComponentMeta = ComponentMeta<dyn Component>;
+type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
 type ComponentRegistry = fn(TypeId) -> Option<GenericComponentMeta>;
 
 enum SystemState {
@@ -18,7 +18,7 @@ pub struct System {
     /*
      Initiated components
      */
-    component_repository: super::ComponentRepository,
+    component_repository: ComponentRepository,
 
     state: SystemState
 }
@@ -33,7 +33,7 @@ impl System {
             component_registry,
             entrypoint,
 
-            component_repository: super::ComponentRepository::new(),
+            component_repository: ComponentRepository::new(),
             state: SystemState::Stopped
         }
     }
@@ -80,6 +80,8 @@ impl System {
                 None => {
                     result.push(*current_type_id);
                     in_results.insert(*current_type_id);
+                    in_stack.remove(current_type_id);
+                    stack.pop();
                 }
             }
         }
@@ -92,39 +94,72 @@ impl System {
 mod tests {
     use super::*;
 
-    //#[derive(Component)]
-    //struct A {}
-    //#[derive(Component)]
-    //struct B {}
-    //#[derive(Component)]
-    //struct C {}
+    struct A { }
+    impl Component for A {
+        fn build(_: &ComponentRepository) -> A { A{} }
+        #[inline]
+        fn meta() -> ComponentMeta<Box<A>> {
+            ComponentMeta {
+                type_id: TypeId::of::<A>(),
+                build: Box::new(|_| Box::new(A{})),
+                depends_on: vec![
+                    TypeId::of::<B>(),
+                    TypeId::of::<C>(),
+                ]
+            }
+        }
+    }
+    struct B {}
+    impl Component for B {
+        fn build(_: &ComponentRepository) -> B { B{} }
+        fn meta() -> ComponentMeta<Box<B>> {
+            ComponentMeta {
+                type_id: TypeId::of::<B>(),
+                build: Box::new(|_| Box::new(B{})),
+                depends_on: vec![
+                    TypeId::of::<C>(),
+                ]
+            }
+        }
+    }
+    struct C {}
+    impl Component for C {
+        fn build(_: &ComponentRepository) -> C { C{} }
+        fn meta() -> ComponentMeta<Box<C>> {
+            ComponentMeta {
+                type_id: TypeId::of::<C>(),
+                build: Box::new(|_| Box::new(C{})),
+                depends_on: vec![ ]
+            }
+        }
+    }
 
-    //#[test]
-    //fn test_topological_sort() {
-    //    let registry: ComponentRegistry = |tid| {
-    //        if tid == TypeId::of::<A>() {
-    //            let m = ComponentMeta {
-    //                type_id: TypeId::of::<A>(),
-    //                build: |_| A{},
-    //                depends_on: vec![
-    //                    TypeId::of::<B>(),
-    //                    TypeId::of::<C>(),
-    //                ]
-    //            };
-    //            return Some(m)
-    //        } else if tid == TypeId::of::<B>() {
-    //            let m = ComponentMeta {
-    //                type_id: TypeId::of::<B>(),
-    //                build: |_| B{},
-    //                depends_on: vec![
-    //                    TypeId::of::<C>(),
-    //                ]
-    //            };
-    //            return Some(m)
-    //        } else {
-    //            None
-    //        }
-    //    };
-    //}
+
+    #[test]
+    fn test_topological_sort() {
+
+        let registry: ComponentRegistry = |tid| {
+            if tid == TypeId::of::<A>() {
+                return Some(A::meta().into())
+            } else if tid == TypeId::of::<B>() {
+                return Some(B::meta().into())
+            } else if tid == TypeId::of::<C>() {
+                return Some(C::meta().into())
+            } else {
+                None
+            }
+        };
+
+        let sys = System::new(registry, TypeId::of::<A>());
+        let result = sys.topological_sort();
+        assert_eq!(
+            result,
+            vec![
+                TypeId::of::<C>(),
+                TypeId::of::<B>(),
+                TypeId::of::<A>(),
+            ]
+        );
+    }
 }
 

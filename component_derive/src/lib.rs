@@ -35,12 +35,12 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
             }
 
             // Used during topology sort to calculate DAG
-            fn meta() -> shine::ComponentMeta<#ident> {
+            fn meta() -> shine::ComponentMeta<std::boxed::Box<#ident>> {
 
                 return shine::ComponentMeta {
                     type_id: std::any::TypeId::of::<#ident>(),
                     depends_on: #depends_on_tokens,
-                    build: #ident::build
+                    build: std::boxed::Box::new(|repo: &shine::ComponentRepository| std::boxed::Box::new(#ident::build(repo)))
                 }
             }
         }
