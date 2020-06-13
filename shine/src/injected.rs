@@ -1,8 +1,12 @@
+/*
+ * It's arguable if we need this class at all given that we could just use Mutex
+ */
 use std::sync::{Arc, Mutex};
 use std::ops::Deref;
+use std::boxed::Box;
 
 #[derive(Default)]
-pub struct Injected<T> {
+pub struct Injected<T: ?Sized> {
     item: Option<Arc<T>>,
     item_mut: Option<Arc<Mutex<T>>>
 }
@@ -21,6 +25,16 @@ impl<T> Injected<T> {
                 item: Some(Arc::new(val)),
                 item_mut: None
             }
+        }
+    }
+}
+
+impl<T: ?Sized> Injected<T> {
+
+    fn from_arc(val: Arc<T>) -> Injected<T> {
+        return Injected {
+            item: Some(val),
+            item_mut: None
         }
     }
 
@@ -45,5 +59,12 @@ impl<T> Clone for Injected<T> {
             item: self.item.clone(),
             item_mut: self.item_mut.clone(),
         }
+    }
+}
+
+impl<T: ?Sized> From<Box<T>> for Injected<T> {
+    fn from(m: Box<T>) -> Self {
+        let arc: Arc<T> = m.into();
+        return Injected::from_arc(arc);
     }
 }

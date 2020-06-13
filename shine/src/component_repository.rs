@@ -26,3 +26,4 @@ impl ComponentRepository {
             .and_then(|boxed| boxed.downcast_ref())
     }
 }
+
