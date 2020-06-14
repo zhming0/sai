@@ -46,24 +46,26 @@ impl System {
         // 1. topology sort
         let sorted_type_ids = self.topological_sort();
 
-        // 2. start the component one by one
         for tid in sorted_type_ids {
             let meta = (self.component_registry)(tid);
             match meta {
                 Some(m) => {
-                    let component = (m.build)(&self.component_repository);
-                    // let a: std::sync::Arc<dyn Component> = component.into();
-                    let injected_component: Injected<dyn Component> = component.into();
-                    let v = injected_component.extract();
-                    // v.start().await;
-                    self.component_repository.insert(injected_component);
-                    // Do I turn this into an Injected and let it inject?
+                    let type_id = m.type_id;
+                    // 2. start the component one by one
+                    let mut component = (m.build)(&self.component_repository);
+                    component.start().await;
+
+                    // 3. Insert started component into repo
+                    let injected_component = Injected::from(component);
+                    // Here we need a concrete type so this won't work
+                    // self.component_repository.insert(injected_component);
+                    // Current solution:
+                    self.component_repository.insert_with_typeid(type_id, injected_component);
 
                 },
                 None => panic!("This won't happen")
             }
         }
-        // 3. Insert started component into repo
 
 
         self.state = SystemState::Started
@@ -117,6 +119,7 @@ impl System {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use async_trait::async_trait;
 
     struct A { }
     impl Component for A {
@@ -124,11 +127,11 @@ mod tests {
         #[inline]
         fn meta() -> ComponentMeta<Box<A>> {
             ComponentMeta {
-                type_id: TypeId::of::<A>(),
+                type_id: TypeId::of::<Injected<A>>(),
                 build: Box::new(|_| Box::new(A{})),
                 depends_on: vec![
-                    TypeId::of::<B>(),
-                    TypeId::of::<C>(),
+                    TypeId::of::<Injected<B>>(),
+                    TypeId::of::<Injected<C>>(),
                 ]
             }
         }
@@ -138,23 +141,45 @@ mod tests {
         fn build(_: &ComponentRepository) -> B { B{} }
         fn meta() -> ComponentMeta<Box<B>> {
             ComponentMeta {
-                type_id: TypeId::of::<B>(),
+                type_id: TypeId::of::<Injected<B>>(),
                 build: Box::new(|_| Box::new(B{})),
                 depends_on: vec![
-                    TypeId::of::<C>(),
+                    TypeId::of::<Injected<C>>(),
                 ]
             }
         }
     }
-    struct C {}
+    struct C {
+        number: Option<u32>
+    }
+    #[async_trait]
     impl Component for C {
-        fn build(_: &ComponentRepository) -> C { C{} }
+        fn build(_: &ComponentRepository) -> C { C{
+            number: None
+        } }
         fn meta() -> ComponentMeta<Box<C>> {
             ComponentMeta {
-                type_id: TypeId::of::<C>(),
-                build: Box::new(|_| Box::new(C{})),
+                type_id: TypeId::of::<Injected<C>>(),
+                build: Box::new(|r: &ComponentRepository| Box::new(C::build(r))),
                 depends_on: vec![ ]
             }
+        }
+
+        async fn start(&mut self) {
+            println!("here??");
+            self.number = Some(0)
+        }
+    }
+
+    fn demo_registry (tid: TypeId) -> Option<GenericComponentMeta> {
+        if tid == TypeId::of::<Injected<A>>() {
+            return Some(A::meta().into())
+        } else if tid == TypeId::of::<Injected<B>>() {
+            return Some(B::meta().into())
+        } else if tid == TypeId::of::<Injected<C>>() {
+            return Some(C::meta().into())
+        } else {
+            None
         }
     }
 
@@ -162,28 +187,36 @@ mod tests {
     #[test]
     fn test_topological_sort() {
 
-        let registry: ComponentRegistry = |tid| {
-            if tid == TypeId::of::<A>() {
-                return Some(A::meta().into())
-            } else if tid == TypeId::of::<B>() {
-                return Some(B::meta().into())
-            } else if tid == TypeId::of::<C>() {
-                return Some(C::meta().into())
-            } else {
-                None
-            }
-        };
-
-        let sys = System::new(registry, TypeId::of::<A>());
+        let sys = System::new(demo_registry, TypeId::of::<Injected<A>>());
         let result = sys.topological_sort();
         assert_eq!(
             result,
             vec![
-                TypeId::of::<C>(),
-                TypeId::of::<B>(),
-                TypeId::of::<A>(),
+                TypeId::of::<Injected<C>>(),
+                TypeId::of::<Injected<B>>(),
+                TypeId::of::<Injected<A>>(),
             ]
         );
+    }
+
+    #[tokio::test]
+    async fn test_system_start() {
+
+        let mut system = System::new(
+            demo_registry,
+            TypeId::of::<Injected<A>>()
+        );
+
+        system.start().await;
+
+        let repo = system.component_repository;
+        let type_id = TypeId::of::<Injected<C>>();
+
+        let x: &Injected<dyn Component> = repo.get_by_typeid(type_id).unwrap();
+        let c = x.clone().downcast::<C>();
+
+        assert_eq!(c.is_some(), true);
+        assert_eq!(c.unwrap().extract().number, Some(0));
     }
 }
 

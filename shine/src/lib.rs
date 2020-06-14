@@ -1,5 +1,6 @@
 use std::boxed::Box;
-use std::any::TypeId;
+use std::any::{TypeId};
+use async_trait::async_trait;
 
 pub use component_derive::Component;
 
@@ -12,9 +13,12 @@ pub use component_repository::ComponentRepository;
 mod system;
 pub use system::System;
 
-pub trait Component {
-    fn start(&mut self) {}
-    fn stop(&mut self) {}
+mod downcast;
+
+#[async_trait()]
+pub trait Component: Send + downcast::Downcast {
+    async fn start(&mut self) {}
+    async fn stop(&mut self) {}
 
     fn build(registry: &ComponentRepository) -> Self
         where Self: Sized;

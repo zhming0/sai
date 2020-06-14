@@ -4,6 +4,8 @@
 use std::sync::{Arc, Mutex};
 use std::ops::Deref;
 use std::boxed::Box;
+use std::any::Any;
+use super::downcast::Downcast;
 
 #[derive(Default)]
 pub struct Injected<T: ?Sized> {
@@ -25,6 +27,20 @@ impl<T> Injected<T> {
                 item: Some(Arc::new(val)),
                 item_mut: None
             }
+        }
+    }
+}
+
+impl<T: Downcast + 'static + ?Sized> Injected<T> {
+    pub fn downcast<S: Any + Send + Sync>(self) -> Option<Injected<S>> {
+        if self.item.is_some() {
+            let item = self.item.unwrap();
+            return Some(Injected {
+                item: Some(item.into_any_arc().downcast().unwrap()),
+                item_mut: None
+            })
+        } else {
+            return None
         }
     }
 }
@@ -53,7 +69,7 @@ impl<T: ?Sized> Injected<T> {
     }
 }
 
-impl<T> Clone for Injected<T> {
+impl<T: ?Sized> Clone for Injected<T> {
     fn clone(&self) -> Injected<T> {
         return Injected {
             item: self.item.clone(),
