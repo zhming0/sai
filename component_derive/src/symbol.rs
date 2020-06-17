@@ -6,6 +6,7 @@ use syn::{Ident, Path};
 pub struct Symbol(&'static str);
 
 pub const INJECTED: Symbol = Symbol("injected");
+pub const LIFECYCLE: Symbol = Symbol("lifecycle");
 
 impl PartialEq<Symbol> for Ident {
     fn eq(&self, word: &Symbol) -> bool {

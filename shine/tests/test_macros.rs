@@ -1,4 +1,4 @@
-use shine::Component;
+use shine::{Component, Injected};
 use std::sync::Arc;
 use std::any::TypeId;
 
@@ -32,6 +32,6 @@ fn test_meta() {
 
     let meta = Foo::meta();
 
-    assert_eq!(meta.type_id, TypeId::of::<Foo>());
+    assert_eq!(meta.type_id, TypeId::of::<Injected<Foo>>());
     assert_eq!(meta.depends_on, vec![TypeId::of::<Arc<String>>()]);
 }

@@ -13,17 +13,19 @@ mod symbol;
 use symbol::*;
 
 
-#[proc_macro_derive(Component, attributes(injected))]
+#[proc_macro_derive(Component, attributes(injected, lifecycle))]
 pub fn derive_component(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     // println!("{}", ast.attrs);
-    let ident = ast.ident;
+    let ident = &ast.ident;
 
     let fields = parse_struct_data(&ast.data);
 
     let fields_tokens = build_struct_fields(&fields);
 
     let depends_on_tokens = build_depends_on(&fields);
+
+    let impl_lifecycle_tokens = build_impl_component_lifecycle(&ast);
 
     let tokens = quote!{
         impl shine::Component for #ident {
@@ -38,12 +40,14 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
             fn meta() -> shine::ComponentMeta<std::boxed::Box<#ident>> {
 
                 return shine::ComponentMeta {
-                    type_id: std::any::TypeId::of::<#ident>(),
+                    type_id: std::any::TypeId::of::<shine::Injected<#ident>>(),
                     depends_on: #depends_on_tokens,
                     build: std::boxed::Box::new(|repo: &shine::ComponentRepository| std::boxed::Box::new(#ident::build(repo)))
                 }
             }
         }
+
+        #impl_lifecycle_tokens
     };
 
     return tokens.into();
@@ -61,6 +65,7 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
 
                 // Unable to find type {} in component repository
                 return quote! {
+                    // TODO: this needs to change
                     #ident: registry.get::<#ty>().expect(#erroMsg).clone()
                 }
             } else {
@@ -93,6 +98,26 @@ fn build_depends_on(fields: &Vec<ComponentField>) -> TokenStream2 {
     quote! {
         vec![ #(#x),* ]
     }
+}
+
+fn build_impl_component_lifecycle(ast: &DeriveInput) -> TokenStream2 {
+    let ident = &ast.ident;
+
+    if is_lifecycle_mode(ast) {
+        return quote! {}
+    } else {
+        return quote! {
+            impl shine::ComponentLifecycle for #ident {}
+        }
+    }
+}
+
+fn is_lifecycle_mode(ast: &DeriveInput) -> bool {
+    return ast
+        .attrs
+        .iter()
+        .map(|attr| attr.path == LIFECYCLE)
+        .any(|i| i);
 }
 
 

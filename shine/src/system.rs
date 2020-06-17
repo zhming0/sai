@@ -1,6 +1,6 @@
 use std::any::TypeId;
 use std::collections::HashSet;
-use super::{ComponentMeta, Component, ComponentRepository, Injected};
+use super::{ComponentMeta, Component, ComponentRepository, Injected, ComponentLifecycle};
 
 type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
 type ComponentRegistry = fn(TypeId) -> Option<GenericComponentMeta>;
@@ -136,6 +136,7 @@ mod tests {
             }
         }
     }
+    impl ComponentLifecycle for A {}
     struct B {}
     impl Component for B {
         fn build(_: &ComponentRepository) -> B { B{} }
@@ -149,10 +150,10 @@ mod tests {
             }
         }
     }
+    impl ComponentLifecycle for B {}
     struct C {
         number: Option<u32>
     }
-    #[async_trait]
     impl Component for C {
         fn build(_: &ComponentRepository) -> C { C{
             number: None
@@ -164,9 +165,11 @@ mod tests {
                 depends_on: vec![ ]
             }
         }
+    }
 
+    #[async_trait]
+    impl ComponentLifecycle for C {
         async fn start(&mut self) {
-            println!("here??");
             self.number = Some(0)
         }
     }
