@@ -1,5 +1,4 @@
 use shine::{Component, Injected};
-use std::sync::Arc;
 use std::any::TypeId;
 
 /*
@@ -8,9 +7,14 @@ use std::any::TypeId;
 #[derive(Component)]
 struct Foo {
     #[injected]
-    a: Arc<String>,
+    a: Injected<Bar>,
 
     b: String
+}
+
+#[derive(Component)]
+struct Bar {
+    value: String
 }
 
 
@@ -18,12 +22,19 @@ struct Foo {
 fn test_build() {
 
     let mut repo = shine::ComponentRepository::new();
-    let s = String::from("hello world");
-    repo.insert(Arc::new(s));
+    let bar: Box<dyn Component> = (Bar::meta().build)(&repo);
+    let injected_bar: Injected<dyn Component> = bar.into();
+
+    assert_eq!(Bar::meta().type_id, TypeId::of::<Injected<Bar>>());
+
+    repo.insert_with_typeid(
+        Bar::meta().type_id,
+        injected_bar
+    );
 
     let foo = Foo::build(&repo);
 
-    assert_eq!(foo.a.as_str(), "hello world");
+    assert_eq!(foo.a.extract().value, "");
     assert_eq!(foo.b, "");
 }
 
@@ -33,5 +44,5 @@ fn test_meta() {
     let meta = Foo::meta();
 
     assert_eq!(meta.type_id, TypeId::of::<Injected<Foo>>());
-    assert_eq!(meta.depends_on, vec![TypeId::of::<Arc<String>>()]);
+    assert_eq!(meta.depends_on, vec![TypeId::of::<Injected<Bar>>()]);
 }

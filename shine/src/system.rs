@@ -1,6 +1,6 @@
 use std::any::TypeId;
 use std::collections::HashSet;
-use super::{ComponentMeta, Component, ComponentRepository, Injected, ComponentLifecycle};
+use super::{ComponentMeta, Component, ComponentRepository, Injected};
 
 type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
 type ComponentRegistry = fn(TypeId) -> Option<GenericComponentMeta>;
@@ -72,9 +72,28 @@ impl System {
     }
 
     pub async fn stop(&mut self) {
+        match self.state {
+            SystemState::Stopped => return,
+            _ => {},
+        };
         // 1. topology sort
-        // 2. stop components one by one
-        // 3. Remove started component from repo
+        let sorted_type_ids = self.topological_sort();
+
+        // In the reversed order of the start
+        for tid in sorted_type_ids.into_iter().rev() {
+            let component: Option<&Injected<dyn Component>> = self.component_repository.get_by_typeid(tid);
+            match component {
+                Some(c) => {
+                    // TODO: need a mechanism to access injected object mutably
+                    // Then stop it
+                },
+                None => panic!("This won't happen")
+            }
+        }
+
+
+        self.component_repository = ComponentRepository::new();
+        self.state = SystemState::Stopped
 
     }
 
@@ -120,6 +139,7 @@ impl System {
 mod tests {
     use super::*;
     use async_trait::async_trait;
+    use super::super::ComponentLifecycle;
 
     struct A { }
     impl Component for A {
@@ -172,6 +192,10 @@ mod tests {
         async fn start(&mut self) {
             self.number = Some(0)
         }
+        async fn stop(&mut self) {
+            println!("STOPPING C.......");
+            self.number = None
+        }
     }
 
     fn demo_registry (tid: TypeId) -> Option<GenericComponentMeta> {
@@ -203,7 +227,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_system_start() {
+    async fn test_system_start_stop() {
 
         let mut system = System::new(
             demo_registry,
@@ -212,14 +236,25 @@ mod tests {
 
         system.start().await;
 
-        let repo = system.component_repository;
+        let repo = &system.component_repository;
         let type_id = TypeId::of::<Injected<C>>();
 
         let x: &Injected<dyn Component> = repo.get_by_typeid(type_id).unwrap();
-        let c = x.clone().downcast::<C>();
+        let prec = x.clone();
+        // let c = x.clone().downcast::<C>();
+        // assert!(matches!(c.clone().unwrap().extract().number, Some(0)));
 
-        assert_eq!(c.is_some(), true);
-        assert_eq!(c.unwrap().extract().number, Some(0));
+        system.stop().await;
+
+        let c = prec.downcast::<C>();
+        assert!(matches!(c.unwrap().extract().number, None));
     }
+
+    //use std::sync::Arc;
+    //#[test]
+    //fn experiment () {
+    //    let mut x = Some(Arc::new(0));
+    //    let y = x.clone();
+    //}
 }
 

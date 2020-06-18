@@ -16,7 +16,7 @@ pub use system::System;
 mod downcast;
 
 #[async_trait()]
-pub trait ComponentLifecycle {
+pub trait ComponentLifecycle: Send { // Extend Send compiler stop complaining trait object issue
     async fn start(&mut self) {}
     async fn stop(&mut self) {}
 }

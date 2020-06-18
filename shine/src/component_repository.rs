@@ -25,12 +25,11 @@ impl ComponentRepository {
         self.repository.insert(type_id, Box::new(v));
     }
 
-    pub fn get<T: 'static>(&self) -> Option<&T> {
-        println!("Getting {:?}", TypeId::of::<T>());
-        self.repository
-            .get(&TypeId::of::<T>())
-            .and_then(|boxed| boxed.downcast_ref::<T>())
-    }
+    //pub fn get<T: 'static>(&self) -> Option<&T> {
+    //    self.repository
+    //        .get(&TypeId::of::<T>())
+    //        .and_then(|boxed| boxed.downcast_ref::<T>())
+    //}
 
     pub fn get_by_typeid<T: 'static>(&self, type_id: TypeId) -> Option<&T> {
         println!("Getting {:?}", type_id);

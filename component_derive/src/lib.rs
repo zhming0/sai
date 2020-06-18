@@ -3,8 +3,7 @@ use proc_macro::TokenStream;
 #[macro_use]
 extern crate syn;
 use syn::{DeriveInput, Data, Field};
-use syn::Meta::{Path, NameValue, List};
-use syn::NestedMeta::{Lit, Meta};
+use syn::Meta::{Path};
 use syn::export::{TokenStream2};
 #[macro_use]
 extern crate quote;
@@ -42,7 +41,9 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
                 return shine::ComponentMeta {
                     type_id: std::any::TypeId::of::<shine::Injected<#ident>>(),
                     depends_on: #depends_on_tokens,
-                    build: std::boxed::Box::new(|repo: &shine::ComponentRepository| std::boxed::Box::new(#ident::build(repo)))
+                    build: std::boxed::Box::new(
+                        |repo: &shine::ComponentRepository| std::boxed::Box::new(#ident::build(repo))
+                    )
                 }
             }
         }
@@ -59,14 +60,17 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
         .into_iter()
         .map(|f| {
             let ident = &f.ident;
-            let ty = &f.ty;
+            let ty = &f.ty; // expecting Injected<Bluh>
             if f.injected {
-                let erroMsg = format!("Unable to find type {} in component repository", quote!{#ty});
+                let error_msg_type_not_found = format!("Unable to find type {} in component repository", quote!{#ty});
+                let error_msg_cast_failure = format!("Found {} in component repository. But unable to downcast it", quote!{#ty});
 
-                // Unable to find type {} in component repository
                 return quote! {
-                    // TODO: this needs to change
-                    #ident: registry.get::<#ty>().expect(#erroMsg).clone()
+                    #ident: {
+                        let comp: &shine::Injected::<dyn shine::Component> = registry.get_by_typeid(TypeId::of::<#ty>()).expect(#error_msg_type_not_found);
+                        let dep: #ty = comp.clone().downcast().expect(#error_msg_cast_failure);
+                        dep
+                    }
                 }
             } else {
                 return quote! {
