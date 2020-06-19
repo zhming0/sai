@@ -9,39 +9,23 @@ use super::downcast::Downcast;
 
 #[derive(Default)]
 pub struct Injected<T: ?Sized> {
-    item: Option<Arc<T>>,
-    item_mut: Option<Arc<Mutex<T>>>
+    item: Arc<T>,
 }
 
 impl<T> Injected<T> {
+    // FIXME: remove mutable
     pub fn new(val: T, mutable: bool) -> Injected<T> {
-        if mutable {
-            // This is experimental!
-            // I don't think this is a good idea
-            return Injected {
-                item_mut: Some(Arc::new(Mutex::new(val))),
-                item: None
-            }
-        } else {
-            return Injected {
-                item: Some(Arc::new(val)),
-                item_mut: None
-            }
+        return Injected {
+            item: Arc::new(val),
         }
     }
 }
 
 impl<T: Downcast + 'static + ?Sized> Injected<T> {
     pub fn downcast<S: Any + Send + Sync>(self) -> Option<Injected<S>> {
-        if self.item.is_some() {
-            let item = self.item.unwrap();
-            return Some(Injected {
-                item: Some(item.into_any_arc().downcast().unwrap()),
-                item_mut: None
-            })
-        } else {
-            return None
-        }
+        return Some(Injected {
+            item: self.item.into_any_arc().downcast().unwrap(),
+        })
     }
 }
 
@@ -49,31 +33,24 @@ impl<T: ?Sized> Injected<T> {
 
     fn from_arc(val: Arc<T>) -> Injected<T> {
         return Injected {
-            item: Some(val),
-            item_mut: None
+            item: val
         }
     }
 
     pub fn extract(&self) -> &T {
-        if self.item_mut.is_some() {
-            panic!("Extract mutable Injected has been implemented!");
-        } else {
+        return self.item.deref()
+    }
 
-            let ret = match &self.item {
-                Some(v) => v.deref(),
-                _ => panic!("Unexpected fatal error in Injected")
-            };
-
-            return ret
-        }
+    pub fn get_mut(&mut self) -> Option<&mut T> {
+        let v = &mut self.item;
+        Arc::get_mut(v)
     }
 }
 
 impl<T: ?Sized> Clone for Injected<T> {
     fn clone(&self) -> Injected<T> {
         return Injected {
-            item: self.item.clone(),
-            item_mut: self.item_mut.clone(),
+            item: self.item.clone()
         }
     }
 }

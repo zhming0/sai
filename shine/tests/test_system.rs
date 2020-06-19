@@ -42,4 +42,5 @@ async fn system_integration_1() {
     );
 
     system.start().await;
+    system.stop().await;
 }

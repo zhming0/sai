@@ -21,7 +21,6 @@ impl ComponentRepository {
     }
 
     pub fn insert_with_typeid<T: 'static>(&mut self, type_id: TypeId, v: T) {
-        println!("Inserting {:?}", type_id);
         self.repository.insert(type_id, Box::new(v));
     }
 
@@ -32,10 +31,15 @@ impl ComponentRepository {
     //}
 
     pub fn get_by_typeid<T: 'static>(&self, type_id: TypeId) -> Option<&T> {
-        println!("Getting {:?}", type_id);
         self.repository
             .get(&type_id)
             .and_then(|boxed| boxed.downcast_ref::<T>())
+    }
+
+    pub fn get_by_typeid_mut<T: 'static>(&mut self, type_id: TypeId) -> Option<&mut T> {
+        self.repository
+            .get_mut(&type_id)
+            .and_then(|boxed| boxed.downcast_mut::<T>())
     }
 }
 
