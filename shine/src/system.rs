@@ -86,6 +86,9 @@ impl System {
             // This is a bit dangerous
             // TODO more documentation
             owned_component.stop().await;
+
+            // Force rust to drop memory
+            self.component_repository.remove_by_typeid(tid);
         }
 
 

@@ -41,6 +41,10 @@ impl ComponentRepository {
             .get_mut(&type_id)
             .and_then(|boxed| boxed.downcast_mut::<T>())
     }
+
+    pub fn remove_by_typeid(&mut self, type_id: TypeId) {
+        self.repository.remove(&type_id);
+    }
 }
 
 #[cfg(test)]
