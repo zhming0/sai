@@ -249,12 +249,5 @@ mod tests {
         //let c = prec.downcast::<C>();
         // assert!(matches!(c.unwrap().extract().number, None));
     }
-
-    //use std::sync::Arc;
-    //#[test]
-    //fn experiment () {
-    //    let mut x = Some(Arc::new(0));
-    //    let y = x.clone();
-    //}
 }
 

@@ -1,4 +1,4 @@
-use shine::{System, Component, ComponentLifecycle, Injected, async_trait, ComponentMeta};
+use shine::{System, Component, ComponentLifecycle, Injected, async_trait, ComponentMeta, component_registry};
 use std::any::TypeId;
 
 #[derive(Component)]
@@ -23,19 +23,12 @@ impl ComponentLifecycle for B {
     }
 }
 
-fn system_registry (tid: TypeId) -> Option<ComponentMeta<Box<dyn Component>>> {
-    if tid == TypeId::of::<Injected<A>>() {
-        return Some(A::meta().into())
-    } else if tid == TypeId::of::<Injected<B>>() {
-        return Some(B::meta().into())
-    } else {
-        None
-    }
-
-}
+component_registry!(system_registry, [
+    A, B
+]);
 
 #[tokio::test]
-async fn system_integration_1() {
+async fn system_integration_basic() {
     let mut system = System::new(
         system_registry,
         TypeId::of::<Injected<A>>()
