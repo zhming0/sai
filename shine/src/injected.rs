@@ -1,7 +1,7 @@
 /*
  * It's arguable if we need this class at all given that we could just use Mutex
  */
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 use std::ops::Deref;
 use std::boxed::Box;
 use std::any::Any;
@@ -13,8 +13,7 @@ pub struct Injected<T: ?Sized> {
 }
 
 impl<T> Injected<T> {
-    // FIXME: remove mutable
-    pub fn new(val: T, mutable: bool) -> Injected<T> {
+    pub fn new(val: T) -> Injected<T> {
         return Injected {
             item: Arc::new(val),
         }

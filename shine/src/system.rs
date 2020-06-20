@@ -236,11 +236,15 @@ mod tests {
 
         system.start().await;
 
-        let repo = &system.component_repository;
-        let type_id = TypeId::of::<Injected<C>>();
 
-        let x: &Injected<dyn Component> = repo.get_by_typeid(type_id).unwrap();
-        // TODO need to use week pointer here
+        // I wish I can assert the `x` was changed in place
+        // But I can't because x will have to dropped after stop
+        // And x can only be dropped if there is no dependecy on it
+
+        // let repo = &system.component_repository;
+        // let type_id = TypeId::of::<Injected<C>>();
+        // let x: &Injected<dyn Component> = repo.get_by_typeid(type_id).unwrap();
+
         // let c = x.clone().downcast::<C>();
         // assert!(matches!(c.clone().unwrap().extract().number, Some(0)));
 
