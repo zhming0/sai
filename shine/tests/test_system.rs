@@ -26,7 +26,7 @@ struct B {
 #[async_trait]
 impl ComponentLifecycle for B {
     async fn start (&mut self) {
-        let c_value = self.c.extract().value.lock().unwrap();
+        let c_value = self.c.value.lock().unwrap();
         println!("Starting b..., with c_value = {}", c_value);
         self.value = Some(*c_value + 1);
     }

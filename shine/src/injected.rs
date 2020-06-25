@@ -36,10 +36,6 @@ impl<T: ?Sized> Injected<T> {
         }
     }
 
-    pub fn extract(&self) -> &T {
-        return self.item.deref()
-    }
-
     pub fn get_mut(&mut self) -> Option<&mut T> {
         let v = &mut self.item;
         Arc::get_mut(v)
@@ -58,5 +54,13 @@ impl<T: ?Sized> From<Box<T>> for Injected<T> {
     fn from(m: Box<T>) -> Self {
         let arc: Arc<T> = m.into();
         return Injected::from_arc(arc);
+    }
+}
+
+impl<T> Deref for Injected<T> {
+    type Target = Arc<T>;
+
+    fn deref(&self) -> &Arc<T> {
+        &self.item
     }
 }

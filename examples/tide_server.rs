@@ -51,7 +51,7 @@ impl shine::ComponentLifecycle for TideServer {
             app.at("/").get(|_| async { Ok("Hello, world!") });
             app.at("/foo").get(|req: tide::Request<State>| async move {
                 let f = &req.state().foo_controller;
-                return f.extract().index();
+                return f.index();
             });
             let server_fut = app.listen("0.0.0.0:9003");
 

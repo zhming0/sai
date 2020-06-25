@@ -79,7 +79,7 @@ mod tests {
 
         let a_in_repo = dyn_trait_clone.downcast::<A>();
         assert_eq!(a_in_repo.is_some(), true);
-        assert_eq!(a_in_repo.unwrap().extract().value, 0);
+        assert_eq!(a_in_repo.unwrap().value, 0);
     }
 
 

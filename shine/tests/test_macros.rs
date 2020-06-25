@@ -34,7 +34,7 @@ fn test_build() {
 
     let foo = Foo::build(&repo);
 
-    assert_eq!(foo.a.extract().value, "");
+    assert_eq!(foo.a.value, "");
     assert_eq!(foo.b, "");
 }
 
