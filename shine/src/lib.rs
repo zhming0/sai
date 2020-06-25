@@ -15,8 +15,8 @@ pub use system::System;
 
 mod downcast;
 
-#[doc(hidden)]
 pub mod registry;
+pub use registry::ComponentRegistry;
 
 #[async_trait()]
 pub trait ComponentLifecycle: Send { // Extend Send compiler stop complaining trait object issue

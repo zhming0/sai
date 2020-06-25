@@ -1,19 +1,20 @@
 use std::any::TypeId;
 use std::collections::HashSet;
-use super::{ComponentMeta, Component, ComponentRepository, Injected};
-
-type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
-type ComponentRegistry = fn(TypeId) -> Option<GenericComponentMeta>;
+use super::{ComponentMeta, Component, ComponentRepository, Injected, ComponentRegistry};
 
 enum SystemState {
     Stopped,
     Started
 }
 
-pub struct System {
-    pub component_registry: ComponentRegistry,
+pub struct System<T> where T: ComponentRegistry {
 
     pub entrypoint: TypeId,
+
+    /*
+     * Just a dummy object to store the type
+     */
+     __dummy: T,
 
     /*
      Initiated components
@@ -23,15 +24,15 @@ pub struct System {
     state: SystemState
 }
 
-impl System {
+impl<T> System<T> where T: ComponentRegistry {
 
     pub fn new(
-        component_registry: ComponentRegistry,
         entrypoint: TypeId
     ) -> Self {
         return System {
-            component_registry,
             entrypoint,
+
+            __dummy: T::new(),
 
             component_repository: ComponentRepository::new(),
             state: SystemState::Stopped
@@ -47,7 +48,7 @@ impl System {
         let sorted_type_ids = self.topological_sort();
 
         for tid in sorted_type_ids {
-            let meta = (self.component_registry)(tid);
+            let meta = T::get(tid);
             match meta {
                 Some(m) => {
                     let type_id = m.type_id;
@@ -109,7 +110,7 @@ impl System {
 
         while let Some(current_type_id) = stack.last() {
             // TODO: error handling
-            let current_meta = (self.component_registry)(*current_type_id).unwrap();
+            let current_meta = T::get(*current_type_id).unwrap();
             let depends_on = &current_meta.depends_on;
             let next_target = depends_on
                 .iter()
@@ -140,6 +141,9 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     use super::super::ComponentLifecycle;
+
+    type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
+
 
     struct A { }
     impl Component for A {
@@ -210,11 +214,37 @@ mod tests {
         }
     }
 
+    struct DemoRegistry { }
+    impl ComponentRegistry for DemoRegistry {
+        fn get (tid: TypeId) -> Option<GenericComponentMeta> {
+            if tid == TypeId::of::<Injected<A>>() {
+                return Some(A::meta().into())
+            } else if tid == TypeId::of::<Injected<B>>() {
+                return Some(B::meta().into())
+            } else if tid == TypeId::of::<Injected<C>>() {
+                return Some(C::meta().into())
+            } else {
+                None
+            }
+        }
+        fn all () -> Vec<TypeId> {
+            vec![
+                TypeId::of::<Injected<A>>(),
+                TypeId::of::<Injected<B>>(),
+                TypeId::of::<Injected<C>>(),
+            ]
+        }
+
+        fn new() -> Self {
+            DemoRegistry {}
+        }
+    }
+
 
     #[test]
     fn test_topological_sort() {
 
-        let sys = System::new(demo_registry, TypeId::of::<Injected<A>>());
+        let sys: System<DemoRegistry> = System::new(TypeId::of::<Injected<A>>());
         let result = sys.topological_sort();
         assert_eq!(
             result,
@@ -229,8 +259,7 @@ mod tests {
     #[tokio::test]
     async fn test_system_start_stop() {
 
-        let mut system = System::new(
-            demo_registry,
+        let mut system: System<DemoRegistry> = System::new(
             TypeId::of::<Injected<A>>()
         );
 

@@ -47,14 +47,13 @@ impl ComponentLifecycle for C {
     }
 }
 
-component_registry!(system_registry, [
+component_registry!(SystemRegistry, [
     A, B, C
 ]);
 
 #[tokio::test]
 async fn system_integration_basic() {
-    let mut system = System::new(
-        system_registry,
+    let mut system: System<SystemRegistry> = System::new(
         TypeId::of::<Injected<A>>()
     );
 

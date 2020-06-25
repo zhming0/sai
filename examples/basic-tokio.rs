@@ -13,7 +13,7 @@ mod foo_controller;
 mod tide_server;
 use tide_server::TideServer;
 
-component_registry!(all_components, [
+component_registry!(RootRegistry, [
     GothamServer,
     Db,
     foo_controller::FooController,
@@ -22,8 +22,7 @@ component_registry!(all_components, [
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut system = System::new(
-        all_components,
+    let mut system : System<RootRegistry> = System::new(
         TypeId::of::<Injected<TideServer>>()
     );
     println!("System starting up...");

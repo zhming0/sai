@@ -1,46 +1,95 @@
+use std::any::TypeId;
+use super::{ Component, ComponentMeta };
 
 /// A macro that helps setting up Component Registry
 #[macro_export]
 macro_rules! component_registry {
     ($name:ident, [$($x:ty),*]) => {
 
-        pub fn $name (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
+        struct $name {}
 
-            $(
-                let meta = <$x>::meta();
-                if tid == meta.type_id {
-                    return Some(meta.into())
-                }
-            )*
+        impl $crate::registry::ComponentRegistry for $name {
+            fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
+                $(
+                    let meta = <$x>::meta();
+                    if tid == meta.type_id {
+                        return Some(meta.into())
+                    }
+                )*
 
-            None
+                None
+
+            }
+
+            fn all () -> Vec<TypeId> {
+                vec![
+                    $(
+                        std::any::TypeId::of::<$crate::Injected<$x>>(),
+                    )*
+                ]
+            }
+
+            fn new () -> Self {
+                $name{}
+            }
         }
+
     }
 }
 
 /// A macro that combines any number of Component Registry
 #[macro_export]
-macro_rules! combine_registries {
-    ($name:ident, [$($x:expr),*]) => {
+macro_rules! combine_component_registry {
+    ($name:ident, [$($x:ty),*]) => {
 
-        pub fn $name (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
+        struct $name {}
 
-            $(
-                let meta = $x(tid);
-                if meta.is_some() {
-                    return meta;
-                }
-            )*
+        impl $crate::registry::ComponentRegistry for $name {
+            fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
+                $(
+                    let meta = <$x>::get(tid);
+                    if meta.is_some() {
+                        return meta;
+                    }
+                )*
 
-            None
+                None
+
+            }
+
+            fn all () -> Vec<TypeId> {
+                let mut result = Vec::new();
+                $(
+                    let mut all = <$x>::all();
+                    result.append(&mut all);
+                )*
+                return result;
+            }
+
+            fn new () -> Self {
+                $name{}
+            }
         }
+
     }
+}
+
+
+pub trait ComponentRegistry {
+    /// Getting a
+    fn get (type_id: TypeId) -> Option<ComponentMeta<Box<dyn Component>>>;
+
+    /// All the TypeIds that's in this registry
+    fn all () -> Vec<TypeId>;
+
+    fn new () -> Self;
 }
 
 
 #[cfg(test)]
 mod tests {
 
+    use super::*;
     use super::super::*;
     use std::any::TypeId;
 
@@ -59,20 +108,22 @@ mod tests {
     }
     impl ComponentLifecycle for A {}
 
-    component_registry!(dummy_registry, [A]);
+    component_registry!(DummyRegistry, [A]);
+    component_registry!(DummyRegistry2, [A]);
+    combine_component_registry!(CombinedRegistry, [DummyRegistry, DummyRegistry2]);
 
     #[test]
-    fn component_registry_macro() {
-        assert!(matches!(dummy_registry(TypeId::of::<i32>()), None));
-        assert!(matches!(dummy_registry(TypeId::of::<Injected<A>>()), Some(_)));
+    fn component_registry_new_macro() {
+        assert!(matches!(DummyRegistry::get(TypeId::of::<i32>()), None));
+        assert!(matches!(DummyRegistry::get(TypeId::of::<Injected<A>>()), Some(_)));
+
+        assert_eq!(DummyRegistry::all(), vec![TypeId::of::<Injected<A>>()]);
     }
 
-    component_registry!(dummy_registry2, [A]);
-    combine_registries!(combined_reg, [dummy_registry, dummy_registry2]);
     #[test]
-    fn combine_registries_macro() {
-        assert!(matches!(dummy_registry(TypeId::of::<i32>()), None));
-        assert!(matches!(dummy_registry(TypeId::of::<Injected<A>>()), Some(_)));
+    fn combine_registries_new_macro() {
+        assert!(matches!(CombinedRegistry::get(TypeId::of::<i32>()), None));
+        assert!(matches!(CombinedRegistry::get(TypeId::of::<Injected<A>>()), Some(_)));
     }
 }
 
