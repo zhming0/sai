@@ -53,9 +53,7 @@ component_registry!(SystemRegistry, [
 
 #[tokio::test]
 async fn system_integration_basic() {
-    let mut system: System<SystemRegistry> = System::new(
-        TypeId::of::<Injected<A>>()
-    );
+    let mut system: System<SystemRegistry> = System::new();
 
     system.start().await;
     system.stop().await;

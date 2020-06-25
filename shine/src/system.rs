@@ -1,6 +1,6 @@
 use std::any::TypeId;
 use std::collections::HashSet;
-use super::{ComponentMeta, Component, ComponentRepository, Injected, ComponentRegistry};
+use super::{Component, ComponentRepository, Injected, ComponentRegistry};
 
 enum SystemState {
     Stopped,
@@ -9,10 +9,13 @@ enum SystemState {
 
 pub struct System<T> where T: ComponentRegistry {
 
-    pub entrypoint: TypeId,
+    /// If this is set, then the system will only start
+    /// components that can be reached by this entrypoint.
+    pub entrypoint: Option<TypeId>,
 
     /*
      * Just a dummy object to store the type
+     * Any better way?
      */
      __dummy: T,
 
@@ -26,14 +29,21 @@ pub struct System<T> where T: ComponentRegistry {
 
 impl<T> System<T> where T: ComponentRegistry {
 
-    pub fn new(
+    pub fn new() -> Self {
+        return System {
+            entrypoint: None,
+            __dummy: T::new(),
+            component_repository: ComponentRepository::new(),
+            state: SystemState::Stopped
+        }
+    }
+
+    pub fn with_entrypoint(
         entrypoint: TypeId
     ) -> Self {
         return System {
-            entrypoint,
-
+            entrypoint: Some(entrypoint),
             __dummy: T::new(),
-
             component_repository: ComponentRepository::new(),
             state: SystemState::Stopped
         }
@@ -105,8 +115,21 @@ impl<T> System<T> where T: ComponentRegistry {
         let mut stack: Vec<TypeId> = Vec::new();
         let mut in_stack: HashSet<TypeId> = HashSet::new();
 
-        stack.push(self.entrypoint);
-        in_stack.insert(self.entrypoint);
+        let entrypoints = {
+            if self.entrypoint.is_some() {
+                vec![self.entrypoint.unwrap()]
+            } else {
+                Self::detect_entrypoints()
+            }
+        };
+
+        stack.append(&mut entrypoints.clone());
+        for e in entrypoints {
+            in_stack.insert(e);
+        }
+
+        //stack.push(self.entrypoint);
+        //in_stack.insert(self.entrypoint);
 
         while let Some(current_type_id) = stack.last() {
             // TODO: error handling
@@ -134,13 +157,32 @@ impl<T> System<T> where T: ComponentRegistry {
 
         return result;
     }
+
+    fn detect_entrypoints () -> Vec<TypeId> {
+        // If a tid has dependecy, it will be flagged here
+        let mut flagged = std::collections::HashSet::new();
+
+        let all_tids = T::all();
+        for tid in all_tids {
+            let meta = T::get(tid).unwrap();
+            let depends = meta.depends_on;
+            for t in depends {
+                flagged.insert(t);
+            }
+        }
+
+        T::all()
+            .into_iter()
+            .filter(|id| !flagged.contains(&id))
+            .collect()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use super::super::ComponentLifecycle;
+    use super::super::{ComponentLifecycle, ComponentMeta};
 
     type GenericComponentMeta = ComponentMeta<Box<dyn Component>>;
 
@@ -202,18 +244,6 @@ mod tests {
         }
     }
 
-    fn demo_registry (tid: TypeId) -> Option<GenericComponentMeta> {
-        if tid == TypeId::of::<Injected<A>>() {
-            return Some(A::meta().into())
-        } else if tid == TypeId::of::<Injected<B>>() {
-            return Some(B::meta().into())
-        } else if tid == TypeId::of::<Injected<C>>() {
-            return Some(C::meta().into())
-        } else {
-            None
-        }
-    }
-
     struct DemoRegistry { }
     impl ComponentRegistry for DemoRegistry {
         fn get (tid: TypeId) -> Option<GenericComponentMeta> {
@@ -244,7 +274,7 @@ mod tests {
     #[test]
     fn test_topological_sort() {
 
-        let sys: System<DemoRegistry> = System::new(TypeId::of::<Injected<A>>());
+        let sys: System<DemoRegistry> = System::new();
         let result = sys.topological_sort();
         assert_eq!(
             result,
@@ -259,9 +289,7 @@ mod tests {
     #[tokio::test]
     async fn test_system_start_stop() {
 
-        let mut system: System<DemoRegistry> = System::new(
-            TypeId::of::<Injected<A>>()
-        );
+        let mut system: System<DemoRegistry> = System::new();
 
         system.start().await;
 

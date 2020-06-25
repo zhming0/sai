@@ -22,9 +22,7 @@ component_registry!(RootRegistry, [
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut system : System<RootRegistry> = System::new(
-        TypeId::of::<Injected<TideServer>>()
-    );
+    let mut system : System<RootRegistry> = System::new();
     println!("System starting up...");
     system.start().await;
     println!("System started.");
