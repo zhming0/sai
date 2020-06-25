@@ -1,3 +1,5 @@
+
+/// A macro that helps setting up Component Registry
 #[macro_export]
 macro_rules! component_registry {
     ($name:ident, [$($x:ty),*]) => {
@@ -16,6 +18,7 @@ macro_rules! component_registry {
     }
 }
 
+/// A macro that combines any number of Component Registry
 #[macro_export]
 macro_rules! combine_registries {
     ($name:ident, [$($x:expr),*]) => {

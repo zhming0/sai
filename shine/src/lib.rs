@@ -15,6 +15,7 @@ pub use system::System;
 
 mod downcast;
 
+#[doc(hidden)]
 pub mod registry;
 
 #[async_trait()]

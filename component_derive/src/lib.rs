@@ -1,3 +1,7 @@
+//! Inner Test comment here
+
+/// Outer What is this?
+
 extern crate proc_macro;
 use proc_macro::TokenStream;
 #[macro_use]
@@ -67,7 +71,7 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
 
                 return quote! {
                     #ident: {
-                        let comp: &shine::Injected::<dyn shine::Component> = registry.get_by_typeid(TypeId::of::<#ty>()).expect(#error_msg_type_not_found);
+                        let comp: &shine::Injected::<dyn shine::Component> = registry.get_by_typeid(std::any::TypeId::of::<#ty>()).expect(#error_msg_type_not_found);
                         let dep: #ty = comp.clone().downcast().expect(#error_msg_cast_failure);
                         dep
                     }
