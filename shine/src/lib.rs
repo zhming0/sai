@@ -15,7 +15,7 @@ use std::any::{TypeId};
 /// Re-export from async_trait library
 pub use async_trait::async_trait;
 
-pub use component_derive::Component;
+pub use shine_component_derive::Component;
 
 mod injected;
 pub use injected::Injected;

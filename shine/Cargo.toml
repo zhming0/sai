@@ -14,7 +14,7 @@ readme = "../README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-component_derive = { path = "../component_derive" }
+shine_component_derive = { version = "=0.1.0", path = "../shine_component_derive" }
 async-trait = "0.1.35"
 
 [dev-dependencies]

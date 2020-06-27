@@ -1,5 +1,5 @@
 [package]
-name = "component_derive"
+name = "shine_component_derive"
 version = "0.1.0"
 authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"

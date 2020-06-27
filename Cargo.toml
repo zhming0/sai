@@ -2,7 +2,7 @@
 
 members = [
   "shine",
-  "component_derive",
+  "shine_component_derive",
 
   # Internal
   "examples"
