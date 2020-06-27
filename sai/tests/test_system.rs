@@ -1,4 +1,4 @@
-use shine::{System, Component, ComponentLifecycle, Injected, async_trait, component_registry};
+use sai::{System, Component, ComponentLifecycle, Injected, async_trait, component_registry};
 use std::sync::Mutex;
 
 #[derive(Component)]

@@ -1,12 +1,12 @@
 [package]
-name = "shine"
+name = "sai"
 version = "0.1.0"
 authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"
 description = "IoC/DI framework for Rust"
 keywords = ["IoC", "DI", "component", "system"]
-homepage = "https://github.com/zhming0/shine"
-repository = "https://github.com/zhming0/shine"
+homepage = "https://github.com/zhming0/sai"
+repository = "https://github.com/zhming0/sai"
 license = "MIT OR Apache-2.0"
 categories = ["web-programming"]
 readme = "../README.md"
@@ -15,7 +15,7 @@ exclude = ["tests"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-shine_component_derive = { version = "=0.1.0", path = "../shine_component_derive" }
+sai_component_derive = { version = "=0.1.0", path = "../sai_component_derive" }
 async-trait = "0.1.35"
 
 [dev-dependencies]

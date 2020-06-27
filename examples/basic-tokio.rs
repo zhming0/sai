@@ -1,4 +1,4 @@
-use shine::{Component, component_registry, System};
+use sai::{Component, component_registry, System};
 use tokio::signal;
 
 mod gotham_server;

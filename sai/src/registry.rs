@@ -4,7 +4,7 @@ use super::{ Component, ComponentMeta };
 /// A macro that helps setting up Component Registry
 ///
 /// ```
-/// # use shine::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected};
+/// # use sai::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected};
 /// # use std::any::TypeId;
 /// # struct A { }
 /// # impl Component for A {
@@ -59,7 +59,7 @@ macro_rules! component_registry {
 /// A macro that combines any number of Component Registry
 ///
 /// ```
-/// # use shine::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected, combine_component_registry};
+/// # use sai::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected, combine_component_registry};
 /// # use std::any::TypeId;
 /// # struct A { }
 /// # impl Component for A {
@@ -125,8 +125,8 @@ macro_rules! combine_component_registry {
 /// To define a component registry, you just need to specify the name and a list of Component
 /// identifiers.
 /// ```
-/// use shine::{Component};
-/// # use shine::{component_registry};
+/// use sai::{Component};
+/// # use sai::{component_registry};
 ///
 /// #[derive(Component)]
 /// struct A {};

@@ -1,7 +1,7 @@
-//! This crate provides Shine's component derive macros:
+//! This crate provides Sai's component derive macros:
 //!
 //! ```ignore
-//! use shine::{Component};
+//! use sai::{Component};
 //! #[derive(Component)]
 //! struct FooComponent {
 //!     #[injected]
@@ -43,8 +43,8 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
     let impl_lifecycle_tokens = build_impl_component_lifecycle(&ast);
 
     let tokens = quote!{
-        impl shine::Component for #ident {
-            fn build(registry: &shine::ComponentRepository) -> #ident {
+        impl sai::Component for #ident {
+            fn build(registry: &sai::ComponentRepository) -> #ident {
                 return #ident {
                     #fields_tokens
                 }
@@ -52,13 +52,13 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
             }
 
             // Used during topology sort to calculate DAG
-            fn meta() -> shine::ComponentMeta<std::boxed::Box<#ident>> {
+            fn meta() -> sai::ComponentMeta<std::boxed::Box<#ident>> {
 
-                return shine::ComponentMeta {
-                    type_id: std::any::TypeId::of::<shine::Injected<#ident>>(),
+                return sai::ComponentMeta {
+                    type_id: std::any::TypeId::of::<sai::Injected<#ident>>(),
                     depends_on: #depends_on_tokens,
                     build: std::boxed::Box::new(
-                        |repo: &shine::ComponentRepository| std::boxed::Box::new(#ident::build(repo))
+                        |repo: &sai::ComponentRepository| std::boxed::Box::new(#ident::build(repo))
                     )
                 }
             }
@@ -83,7 +83,7 @@ fn build_struct_fields (fields: &Vec<ComponentField>) -> TokenStream2 {
 
                 return quote! {
                     #ident: {
-                        let comp: &shine::Injected::<dyn shine::Component> = registry.get_by_typeid(std::any::TypeId::of::<#ty>()).expect(#error_msg_type_not_found);
+                        let comp: &sai::Injected::<dyn sai::Component> = registry.get_by_typeid(std::any::TypeId::of::<#ty>()).expect(#error_msg_type_not_found);
                         let dep: #ty = comp.clone().downcast().expect(#error_msg_cast_failure);
                         dep
                     }
@@ -127,7 +127,7 @@ fn build_impl_component_lifecycle(ast: &DeriveInput) -> TokenStream2 {
         return quote! {}
     } else {
         return quote! {
-            impl shine::ComponentLifecycle for #ident {}
+            impl sai::ComponentLifecycle for #ident {}
         }
     }
 }

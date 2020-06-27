@@ -1,8 +1,8 @@
 [workspace]
 
 members = [
-  "shine",
-  "shine_component_derive",
+  "sai",
+  "sai_component_derive",
 
   # Internal
   "examples"

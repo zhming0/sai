@@ -1,4 +1,4 @@
-use shine::{Component, Injected, async_trait};
+use sai::{Component, Injected, async_trait};
 use futures::prelude::*;
 use futures::channel::oneshot::{Sender, Receiver};
 use gotham::state::State;
@@ -26,7 +26,7 @@ pub struct GothamServer {
 }
 
 #[async_trait]
-impl shine::ComponentLifecycle for GothamServer {
+impl sai::ComponentLifecycle for GothamServer {
     async fn start (&mut self) {
         println!("Starting Gotham Server...");
         let ( sender, receiver ) = futures::channel::oneshot::channel::<ServerCommand>();

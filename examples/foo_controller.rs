@@ -1,4 +1,4 @@
-use shine::{Component, Injected, async_trait};
+use sai::{Component, Injected, async_trait};
 use gotham::state::State;
 
 #[derive(Component)]

@@ -1,4 +1,4 @@
-use shine::{Component, Injected};
+use sai::{Component, Injected};
 use std::any::TypeId;
 
 /*
@@ -21,7 +21,7 @@ struct Bar {
 #[test]
 fn test_build() {
 
-    let mut repo = shine::ComponentRepository::new();
+    let mut repo = sai::ComponentRepository::new();
     let bar: Box<dyn Component> = (Bar::meta().build)(&repo);
     let injected_bar: Injected<dyn Component> = bar.into();
 

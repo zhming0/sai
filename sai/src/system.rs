@@ -14,7 +14,7 @@ enum SystemState {
 /// ```
 ///
 /// // Assume a RootRegistry is defined here
-/// use shine::{System, Component, component_registry};
+/// use sai::{System, Component, component_registry};
 ///
 /// #[derive(Component)]
 /// struct Foo {
@@ -64,7 +64,7 @@ impl<T> System<T> where T: ComponentRegistry {
     ///
     /// __Example__
     /// ```ignore
-    /// use shine::{component_registry, System};
+    /// use sai::{component_registry, System};
     /// component_registry!(RootRegistry, [ component1, component2 ]);
     ///
     /// let system: System<RootRegistry> = System::new();

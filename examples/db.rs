@@ -1,4 +1,4 @@
-use shine::{Component, async_trait};
+use sai::{Component, async_trait};
 use bb8::{Pool, RunError};
 use bb8_postgres::PostgresConnectionManager;
 use std::str::FromStr;
@@ -10,7 +10,7 @@ pub struct Db {
 }
 
 #[async_trait]
-impl shine::ComponentLifecycle for Db {
+impl sai::ComponentLifecycle for Db {
     async fn start (&mut self) {
         println!("Starting DB connection...");
 
@@ -38,7 +38,7 @@ impl shine::ComponentLifecycle for Db {
 
     async fn stop (&mut self) {
         // No explict action.
-        // we are relying shine to drop this component automatically
+        // we are relying sai to drop this component automatically
         println!("Shutting down DB connections...");
     }
 }

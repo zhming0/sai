@@ -1,4 +1,4 @@
-use shine::{Component, Injected, async_trait};
+use sai::{Component, Injected, async_trait};
 use futures::prelude::*;
 use futures::channel::oneshot::{Sender, Receiver};
 
@@ -21,7 +21,7 @@ pub struct TideServer {
 }
 
 #[async_trait]
-impl shine::ComponentLifecycle for TideServer {
+impl sai::ComponentLifecycle for TideServer {
     async fn start (&mut self) {
         println!("Starting TideServer...");
         let ( sender, receiver ) = futures::channel::oneshot::channel::<ServerCommand>();

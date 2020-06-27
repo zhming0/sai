@@ -1,10 +1,10 @@
-//! # Shine
+//! # Sai
 //!
-//! Shine is a framework for managing lifecycle and dependency of your software components.
+//! Sai is a framework for managing lifecycle and dependency of your software components.
 //! In some languages, it was called "IoC" and "Dependency Injection".
 //! The main usecase of this framework is on medium/large scale web services.
 //!
-//! The Shine ecosystem consists of two major concepts: [System](struct.System.html), [Component](trait.Component.html).
+//! The Sai ecosystem consists of two major concepts: [System](struct.System.html), [Component](trait.Component.html).
 //! A System is a runtime unit that control lifecycles of all Components.
 //! A Component is a group of logic. A Component can depends on other Components and it can
 //! also have its own internal state.
@@ -15,7 +15,7 @@ use std::any::{TypeId};
 /// Re-export from async_trait library
 pub use async_trait::async_trait;
 
-pub use shine_component_derive::Component;
+pub use sai_component_derive::Component;
 
 mod injected;
 pub use injected::Injected;
@@ -51,7 +51,7 @@ pub trait ComponentLifecycle: Send { // Extend Send compiler stop complaining tr
 ///
 /// **Defining components with no explict startup / shutdown logic**
 /// ```
-/// use shine::{Component, Injected};
+/// use sai::{Component, Injected};
 /// #[derive(Component)]
 /// struct Bar {}
 ///
@@ -64,11 +64,11 @@ pub trait ComponentLifecycle: Send { // Extend Send compiler stop complaining tr
 /// In above example, `Foo` and `Bar` are both component. Foo *depends on* Bar, the dependency is
 /// defined via the `#[injected]` attributes.
 ///
-/// Note: a dependency injected by Shine has to be wrapped by `Injected` struct.
+/// Note: a dependency injected by Sai has to be wrapped by `Injected` struct.
 ///
 /// **Component with explict startup / shutdown logic**
 /// ```
-/// use shine::{Component, ComponentLifecycle, async_trait};
+/// use sai::{Component, ComponentLifecycle, async_trait};
 /// #[derive(Component)]
 /// #[lifecycle]
 /// struct Foo {

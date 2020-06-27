@@ -1,12 +1,12 @@
 [package]
-name = "shine_component_derive"
+name = "sai_component_derive"
 version = "0.1.0"
 authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"
-description = "Implementation of #[derive(Component)] for Shine"
+description = "Implementation of #[derive(Component)] for Sai"
 keywords = ["IoC", "DI", "component", "system"]
-homepage = "https://github.com/zhming0/shine"
-repository = "https://github.com/zhming0/shine"
+homepage = "https://github.com/zhming0/sai"
+repository = "https://github.com/zhming0/sai"
 license = "MIT OR Apache-2.0"
 categories = ["web-programming"]
 readme = "../README.md"

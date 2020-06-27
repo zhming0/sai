@@ -1,13 +1,12 @@
-/// The official wrapper for all dependencies.
-///
-/// This is Essentially a a wrapper for Arc.
-
 use std::sync::{Arc};
 use std::ops::Deref;
 use std::boxed::Box;
 use std::any::Any;
 use super::downcast::Downcast;
 
+/// The official wrapper for all dependencies.
+///
+/// This is Essentially a a wrapper for Arc.
 #[derive(Default)]
 pub struct Injected<T: ?Sized> {
     item: Arc<T>,
