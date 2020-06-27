@@ -12,7 +12,7 @@ also have its own internal state.
 ## FAQs
 
 - Q: What does "Sai" mean?
-- A: Nothing really. It happens to be my cat's name. I can't find a good enough name because cargo has only single namespace and many good names are reserved (yes, they are reserved rather than used).
+  - A: Nothing really. It happens to be my cat's name. I can't find a good enough name because cargo has only single namespace and many good names are reserved (yes, they are reserved rather than used).
 
 - Q: Does this handle circular dependency?
-- A: No, it does not currently.
+  - A: No, it does not currently.
