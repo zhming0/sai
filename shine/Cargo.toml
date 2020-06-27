@@ -1,8 +1,15 @@
 [package]
 name = "shine"
 version = "0.1.0"
-authors = ["ming"]
+authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"
+description = "IoC/DI framework for Rust"
+keywords = ["IoC", "DI", "component", "system"]
+homepage = "https://github.com/zhming0/shine"
+repository = "https://github.com/zhming0/shine"
+license = "MIT OR Apache-2.0"
+categories = ["web-programming"]
+readme = "../README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

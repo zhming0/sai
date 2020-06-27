@@ -209,7 +209,7 @@ impl<T> System<T> where T: ComponentRegistry {
             match next_target {
                 Some(t) => {
                     if in_stack.contains(t) {
-                        panic!("GG");
+                        panic!("Unable to handle circular dependency in the system");
                     }
                     stack.push(*t);
                     in_stack.insert(*t);

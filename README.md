@@ -8,3 +8,8 @@ The Shine ecosystem consists of two major concepts: [System](struct.System.html)
 A System is a runtime unit that control lifecycles of all Components.
 A Component is a group of logic. A Component can depends on other Components and it can
 also have its own internal state.
+
+## FAQs
+
+- Q: Does this handle circular dependency?
+- A: No, it does not currently.
