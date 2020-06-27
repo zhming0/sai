@@ -25,6 +25,10 @@
     <a href="https://docs.rs/sai">
       API Docs
     </a>
+    <span> | </span>
+    <a href="examples">
+      Examples
+    </a>
   </h3>
 </div>
 
