@@ -1,4 +1,32 @@
-# Sai
+<h1 align="center">Sai</h1>
+
+<br />
+
+<div align="center">
+  <!-- Crates version -->
+  <a href="https://crates.io/crates/sai">
+    <img src="https://img.shields.io/crates/v/sai.svg?style=flat-square"
+    alt="Crates.io version" />
+  </a>
+  <!-- Downloads -->
+  <a href="https://crates.io/crates/sai">
+    <img src="https://img.shields.io/crates/d/sai.svg?style=flat-square"
+      alt="Download" />
+  </a>
+  <!-- docs.rs docs -->
+  <a href="https://docs.rs/sai">
+    <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
+      alt="docs.rs docs" />
+  </a>
+</div>
+
+<div align="center">
+  <h3>
+    <a href="https://docs.rs/sai">
+      API Docs
+    </a>
+  </h3>
+</div>
 
 Sai is a framework for managing lifecycle and dependency of your software components.
 In some languages, it was called "IoC" and "Dependency Injection".
