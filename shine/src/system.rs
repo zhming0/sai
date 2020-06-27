@@ -7,6 +7,37 @@ enum SystemState {
     Started
 }
 
+/// **A system is a collection of components** + the ability to control the lifecycle
+/// of components in a way meeting the dependency requirement of components, e.g. start/stop them.
+///
+///
+/// ```
+///
+/// // Assume a RootRegistry is defined here
+/// use shine::{System, Component, component_registry};
+///
+/// #[derive(Component)]
+/// struct Foo {
+/// }
+///
+/// component_registry!(RootRegistry, [Foo]);
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let mut system : System<RootRegistry> = System::new();
+///     println!("System starting up...");
+///     system.start().await;
+///     println!("System started.");
+///
+///     // Waiting for Ctrl-c
+///     // signal::ctrl_c().await?;
+///
+///     println!("System shutting down...");
+///     system.stop().await;
+///     println!("System shutted down.");
+///     Ok(())
+/// }
+/// ```
 pub struct System<T> where T: ComponentRegistry {
 
     /// If this is set, then the system will only start
@@ -29,6 +60,16 @@ pub struct System<T> where T: ComponentRegistry {
 
 impl<T> System<T> where T: ComponentRegistry {
 
+    /// Create a new system with a Component Registry
+    ///
+    /// __Example__
+    /// ```ignore
+    /// use shine::{component_registry, System};
+    /// component_registry!(RootRegistry, [ component1, component2 ]);
+    ///
+    /// let system: System<RootRegistry> = System::new();
+    /// ```
+    ///
     pub fn new() -> Self {
         return System {
             entrypoint: None,
@@ -38,6 +79,8 @@ impl<T> System<T> where T: ComponentRegistry {
         }
     }
 
+    /// Similar to System::new() but allow you to specified an entrypoint for the system.
+    /// If an entrypoint is specified, it will become the topology root of component tree.
     pub fn with_entrypoint(
         entrypoint: TypeId
     ) -> Self {
@@ -49,6 +92,16 @@ impl<T> System<T> where T: ComponentRegistry {
         }
     }
 
+    /// Create & start all components in the registry in a topological order.
+    /// The topological order is automatically derived by system from analysing `#[injected]`
+    /// macro attributes in component definitons.
+    ///
+    /// The entrypoints will be automatically detected unless specifically specified.
+    ///
+    /// following the example above:
+    /// ```ignore
+    /// system.start().await;
+    /// ```
     pub async fn start(&mut self) {
         match self.state {
             SystemState::Started => return,
@@ -82,6 +135,21 @@ impl<T> System<T> where T: ComponentRegistry {
         self.state = SystemState::Started
     }
 
+    /// Stop and **drop** all components in a topological order in reverse to startup.
+    /// A typical example used with tokio signal:
+    /// ```ignore
+    /// use tokio::signal;
+    ///
+    /// ...
+    ///
+    /// // Waiting for Ctrl-c
+    /// signal::ctrl_c().await?;
+
+    /// println!("System shutting down...");
+    /// system.stop().await;
+    /// println!("System shutted down.");
+    ///
+    /// ```
     pub async fn stop(&mut self) {
         match self.state {
             SystemState::Stopped => return,

@@ -2,13 +2,32 @@ use std::any::TypeId;
 use super::{ Component, ComponentMeta };
 
 /// A macro that helps setting up Component Registry
+///
+/// ```
+/// # use shine::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected};
+/// # use std::any::TypeId;
+/// # struct A { }
+/// # impl Component for A {
+/// #     fn build(_: &ComponentRepository) -> A { A{} }
+/// #     #[inline]
+/// #     fn meta() -> ComponentMeta<Box<A>> {
+/// #         ComponentMeta {
+/// #             type_id: TypeId::of::<Injected<A>>(),
+/// #             build: Box::new(|_| Box::new(A{})),
+/// #             depends_on: vec![ ]
+/// #         }
+/// #     }
+/// # }
+/// # impl ComponentLifecycle for A {}
+/// component_registry!(DummyRegistry, [A]);
+/// ```
 #[macro_export]
 macro_rules! component_registry {
     ($name:ident, [$($x:ty),*]) => {
 
         struct $name {}
 
-        impl $crate::registry::ComponentRegistry for $name {
+        impl $crate::ComponentRegistry for $name {
             fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
                 $(
                     let meta = <$x>::meta();
@@ -21,7 +40,7 @@ macro_rules! component_registry {
 
             }
 
-            fn all () -> Vec<TypeId> {
+            fn all () -> Vec<std::any::TypeId> {
                 vec![
                     $(
                         std::any::TypeId::of::<$crate::Injected<$x>>(),
@@ -38,13 +57,36 @@ macro_rules! component_registry {
 }
 
 /// A macro that combines any number of Component Registry
+///
+/// ```
+/// # use shine::{ComponentMeta, ComponentRepository, Component, ComponentLifecycle, component_registry, Injected, combine_component_registry};
+/// # use std::any::TypeId;
+/// # struct A { }
+/// # impl Component for A {
+/// #     fn build(_: &ComponentRepository) -> A { A{} }
+/// #     #[inline]
+/// #     fn meta() -> ComponentMeta<Box<A>> {
+/// #         ComponentMeta {
+/// #             type_id: TypeId::of::<Injected<A>>(),
+/// #             build: Box::new(|_| Box::new(A{})),
+/// #             depends_on: vec![ ]
+/// #         }
+/// #     }
+/// # }
+/// # impl ComponentLifecycle for A {}
+/// component_registry!(DummyRegistry, [A]);
+/// component_registry!(DummyRegistry2, [A]);
+///
+/// // Combine DummyRegistry and DummyRegistry2 into SuperRegistry
+/// combine_component_registry!(SuperRegistry, [ DummyRegistry, DummyRegistry2 ]);
+/// ```
 #[macro_export]
 macro_rules! combine_component_registry {
     ($name:ident, [$($x:ty),*]) => {
 
         struct $name {}
 
-        impl $crate::registry::ComponentRegistry for $name {
+        impl $crate::ComponentRegistry for $name {
             fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
                 $(
                     let meta = <$x>::get(tid);
@@ -75,6 +117,30 @@ macro_rules! combine_component_registry {
 }
 
 
+/// ComponentRegistry is a **data structure** for system to find a meta information for component.
+/// It's required for a system to have a ComponentRegistry.
+///
+/// Normaly, you don't need to manually implement this trait.
+///
+/// To define a component registry, you just need to specify the name and a list of Component
+/// identifiers.
+/// ```
+/// use shine::{Component};
+/// # use shine::{component_registry};
+///
+/// #[derive(Component)]
+/// struct A {};
+/// #[derive(Component)]
+/// struct B {};
+///
+/// component_registry!(ExampleRegistry, [
+///     A, B
+/// ]);
+/// ```
+/// Note that A, B above are not values, they are the identifiers.
+///
+/// In big project, uou can also composite multiple component registires into one.
+/// Check out [here](macro.combine_component_registry.html).
 pub trait ComponentRegistry {
     /// Getting a
     fn get (type_id: TypeId) -> Option<ComponentMeta<Box<dyn Component>>>;

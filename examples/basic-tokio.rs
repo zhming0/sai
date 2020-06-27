@@ -1,5 +1,4 @@
-use shine::{Component, component_registry, System, Injected};
-use std::any::TypeId;
+use shine::{Component, component_registry, System};
 use tokio::signal;
 
 mod gotham_server;

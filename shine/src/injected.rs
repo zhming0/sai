@@ -1,6 +1,7 @@
-/*
- * It's arguable if we need this class at all given that we could just use Mutex
- */
+/// The official wrapper for all dependencies.
+///
+/// This is Essentially a a wrapper for Arc.
+
 use std::sync::{Arc};
 use std::ops::Deref;
 use std::boxed::Box;

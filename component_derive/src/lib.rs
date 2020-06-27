@@ -1,4 +1,15 @@
-//! Inner Test comment here
+//! This crate provides Shine's component derive macros:
+//!
+//! ```ignore
+//! use shine::{Component};
+//! #[derive(Component)]
+//! struct FooComponent {
+//!     #[injected]
+//!     bar: Injected<BarComponent>
+//! }
+//! ```
+//!
+//! Please refer the Component Trait doc to understand details.
 
 /// Outer What is this?
 
@@ -16,6 +27,7 @@ mod symbol;
 use symbol::*;
 
 
+/// Dervive Macro for defining a component
 #[proc_macro_derive(Component, attributes(injected, lifecycle))]
 pub fn derive_component(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
