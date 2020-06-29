@@ -106,7 +106,7 @@ The `Injected` struct is basically a wrapper over `Arc`.
 It's very common for a component have explict startup logic, 
 e.g. initiate DB connection, bind port for web traffic, connect to message queue, etc. 
 
-In Sai, to control the lifecycle of Component, simple annotate your component with #[lifecycle] and implement `ComponentLifecycle` for it.
+In Sai, to control the lifecycle of Component, simple annotate your component with `#[lifecycle]` and implement `ComponentLifecycle` for it.
 ```rust
 use sai::{Component, Injected, ComponentLifecycle, async_trait};
 
@@ -114,6 +114,7 @@ use sai::{Component, Injected, ComponentLifecycle, async_trait};
 
 // Assuming Pool is a connection pool type
 #[derive(Component)]
+#[lifecycle]  // < --- NOTE HERE HERE 
 pub struct DbPool {
     pool: Option<Pool>
 }
@@ -129,7 +130,7 @@ impl ComponentLifecycle for DbPool {
         println("Shutting down DB connection pool...");
         
         // You don't have to do much here: 
-        // when System stops a Component, it will drop it afterwards.
+        // when System stops a Component, it will drop it as soon as possible.
         // But it's still good to ensure component shutdown cleanly instead of relying on Drop, 
         // though it's not always possible.
     }
@@ -147,7 +148,7 @@ We just need to compose them into a System.
 A System is a state machine that contains a collection of components. 
 The collection of components is represented by `component registry` in Sai. 
 
-```
+```rust
 use sai::{component_registry, System, /* other stuff... */};
 use tokio::signal;
 
