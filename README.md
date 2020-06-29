@@ -155,7 +155,7 @@ use tokio::signal;
 /* FooController + DbPool defined as above */
 
 /* Define a component registry called RootRegistry which has two components */
-component_registry(RootRegisry, [ FooController, DbPool ]);
+component_registry(RootRegistry, [ FooController, DbPool ]);
 
 #[tokio::main] // Or async-std
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
