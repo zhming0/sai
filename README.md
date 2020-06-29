@@ -48,7 +48,7 @@ also have its own internal state.
 
 ## Get Started
 
-Let's go throught the basic usage with Sai. 
+Let's go through the basic usage with Sai. 
 
 ### Step 1: Define your component
 
