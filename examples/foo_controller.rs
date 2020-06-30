@@ -1,17 +1,55 @@
 use sai::{Component, Injected, async_trait};
-use gotham::state::State;
+#[cfg(not(test))]
+use super::Db;
+#[cfg(test)]
+use super::db::MockDb as Db;
 
 #[derive(Component)]
 pub struct FooController {
 
     #[injected]
-    db: Injected<super::Db>
+    db: Injected<Db>
 }
 
 impl FooController {
     pub fn index (&self) -> Result<String, tide::Error> {
-        //std::thread::sleep(std::time::Duration::from_secs(10));
-        //println!("---handle index---");
+        self.db.query();
         Ok("Hello Foo".to_string())
+    }
+
+    pub async fn async_index(&self) {
+        self.db.query_async();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_index () {
+        let mut db = Db::new();
+        db.expect_query()
+            .returning(|| ())
+            .times(1);
+
+        let x = FooController {
+            db: Injected::new(db)
+        };
+
+
+        assert_eq!(x.index().unwrap(), "Hello Foo");
+    }
+
+
+    #[tokio::test]
+    async fn test_async_index () {
+        let mut db = Db::new();
+
+        let x = FooController {
+            db: Injected::new(db)
+        };
+
+        x.async_index().await
     }
 }

@@ -2,6 +2,7 @@ use sai::{Component, async_trait};
 use bb8::{Pool, RunError};
 use bb8_postgres::PostgresConnectionManager;
 use std::str::FromStr;
+use mockall::{automock};
 
 #[derive(Component)]
 #[lifecycle]
@@ -43,3 +44,13 @@ impl sai::ComponentLifecycle for Db {
     }
 }
 
+#[automock]
+impl Db {
+    pub fn query (&self) {
+        // Example..
+    }
+
+    pub async fn query_async (&self) {
+        // Example..
+    }
+}

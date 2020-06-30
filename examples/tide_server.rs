@@ -66,7 +66,7 @@ impl sai::ComponentLifecycle for TideServer {
                 server_handle_fut.boxed()
             ).await;
 
-            println!("Server gracefully shutted down...");
+            println!("TideServer gracefully shutted down...");
             // Technically, the server hasn't being shutted down 100%
             // Because it's up to runtime to drop those spawned tasks
 
@@ -76,7 +76,7 @@ impl sai::ComponentLifecycle for TideServer {
     }
 
     async fn stop (&mut self) {
-        println!("Shutting down web server...");
+        println!("Shutting down TideServer...");
         // It's important to `take` here
         let sender = self.stop_command_sender.take().unwrap();
         sender.send(ServerCommand::Stop).unwrap();

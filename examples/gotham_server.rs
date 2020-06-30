@@ -64,7 +64,7 @@ impl sai::ComponentLifecycle for GothamServer {
                 server_handle_fut.boxed()
             ).await;
 
-            println!("Server gracefully shutted down...");
+            println!("Gotham server gracefully shutted down...");
             // Technically, the server hasn't being shutted down 100%
             // Because it's up to runtime to drop those spawned tasks
 
@@ -74,7 +74,7 @@ impl sai::ComponentLifecycle for GothamServer {
     }
 
     async fn stop (&mut self) {
-        println!("Shutting down web server...");
+        println!("Shutting Gotham server...");
         // It's important to `take` here
         let sender = self.stop_command_sender.take().unwrap();
         sender.send(ServerCommand::Stop).unwrap();
