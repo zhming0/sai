@@ -21,6 +21,9 @@ jobs:
           working_directory: ./sai_component_derive
           command: cargo publish
       - run:
+          name: Wait Crate.io to update index
+          command: sleep 30
+      - run:
           name: Deploy sai
           working_directory: ./sai
           command: cargo publish
