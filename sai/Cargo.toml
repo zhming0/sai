@@ -1,6 +1,6 @@
 [package]
 name = "sai"
-version = "0.1.1" # Don't foget to update the version in dependencies
+version = "0.1.2" # Don't foget to update the version in dependencies
 authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"
 description = "IoC/DI framework for Rust"
@@ -15,7 +15,7 @@ exclude = ["tests"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sai_component_derive = { version = "=0.1.1", path = "../sai_component_derive" }
+sai_component_derive = { version = "=0.1.2", path = "../sai_component_derive" }
 async-trait = "0.1.35"
 
 [dev-dependencies]
