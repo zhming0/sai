@@ -1,0 +1,45 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/rust:1.44-stretch
+    steps:
+      - checkout
+      - run: cargo build
+      - run: cargo test
+
+  deploy:
+    docker:
+      - image: circleci/rust:1.44-stretch
+    steps:
+      - checkout
+      - run:
+          name: Login to crate.io
+          command: echo $CI_CARGO_TOKEN | cargo login
+      - run:
+          name: Deploy sai_component_derive
+          working_directory: ./sai_component_derive
+          command: cargo publish
+      - run:
+          name: Deploy sai
+          working_directory: ./sai
+          command: cargo publish
+
+
+workflows:
+  version: 2.1
+  build-deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
