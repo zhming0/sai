@@ -1,6 +1,6 @@
 [package]
 name = "sai_component_derive"
-version = "0.1.1"
+version = "0.1.1" # Don't foget to update the version in dependencies
 authors = ["zhming0 <guo.zhming@gmail.com>"]
 edition = "2018"
 description = "Implementation of #[derive(Component)] for Sai"
