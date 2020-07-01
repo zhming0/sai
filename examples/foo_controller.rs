@@ -1,8 +1,8 @@
 use sai::{Component, Injected, async_trait};
 #[cfg(not(test))]
-use super::Db;
+use crate::db::Db;
 #[cfg(test)]
-use super::db::MockDb as Db;
+use crate::db::MockDb as Db;
 
 #[derive(Component)]
 pub struct FooController {

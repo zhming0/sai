@@ -25,7 +25,7 @@ use super::{ Component, ComponentMeta };
 macro_rules! component_registry {
     ($name:ident, [$($x:ty),*]) => {
 
-        struct $name {}
+        pub struct $name {}
 
         impl $crate::ComponentRegistry for $name {
             fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {
@@ -84,7 +84,7 @@ macro_rules! component_registry {
 macro_rules! combine_component_registry {
     ($name:ident, [$($x:ty),*]) => {
 
-        struct $name {}
+        pub struct $name {}
 
         impl $crate::ComponentRegistry for $name {
             fn get (tid: std::any::TypeId) -> Option<$crate::ComponentMeta<Box<dyn $crate::Component>>> {

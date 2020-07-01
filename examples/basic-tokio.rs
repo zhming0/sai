@@ -1,23 +1,14 @@
-use sai::{Component, component_registry, System};
+use sai::{System};
 use tokio::signal;
 
 mod gotham_server;
-use gotham_server::GothamServer;
-
 mod db;
-use db::Db;
-
 mod foo_controller;
-
 mod tide_server;
-use tide_server::TideServer;
 
-component_registry!(RootRegistry, [
-    GothamServer,
-    Db,
-    foo_controller::FooController,
-    TideServer
-]);
+mod root_registry;
+use root_registry::RootRegistry;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
