@@ -99,7 +99,7 @@ macro_rules! combine_component_registry {
 
             }
 
-            fn all () -> Vec<TypeId> {
+            fn all () -> Vec<std::any::TypeId> {
                 let mut result = Vec::new();
                 $(
                     let mut all = <$x>::all();
