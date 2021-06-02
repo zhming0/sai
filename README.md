@@ -121,12 +121,12 @@ pub struct DbPool {
 
 #[async_trait]
 impl ComponentLifecycle for DbPool {
-    async start(&mut self) {
+    async fn start(&mut self) {
         println("Starting up DB connection pool...");
         // Just an example
         self.pool = Some(Pool::new(/*...*/))
     }
-    async stop(&mut self) {
+    async fn stop(&mut self) {
         println("Shutting down DB connection pool...");
 
         // You don't have to do much here:
