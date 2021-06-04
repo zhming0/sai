@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/rust:1.44-stretch
+      - image: circleci/rust:1.51-stretch
     steps:
       - checkout
       - run: cargo build
@@ -10,7 +10,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/rust:1.44-stretch
+      - image: circleci/rust:1.51-stretch
     steps:
       - checkout
       - run:

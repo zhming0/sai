@@ -13,7 +13,7 @@ bb8 = "0.4.0"
 bb8-postgres = "0.4.0"
 tokio-postgres = "0.5.1"
 postgres = "0.17.3"
-tide = "0.11.0"
+tide = "0.16.0"
 mockall = "0.7.1"
 
 [[example]]

@@ -30,6 +30,7 @@ impl sai::ComponentLifecycle for TideServer {
         self.stop_command_sender = Some(sender);
         self.stop_ack_receiver = Some(ack_receiver);
 
+        #[derive(Clone)]
         struct State {
             foo_controller: Injected<FooController>
         };
