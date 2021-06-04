@@ -19,7 +19,7 @@ use proc_macro::TokenStream;
 extern crate syn;
 use syn::{DeriveInput, Data, Field};
 use syn::Meta::{Path};
-use syn::export::{TokenStream2};
+use proc_macro2::TokenStream as TokenStream2;
 #[macro_use]
 extern crate quote;
 
